@@ -1,6 +1,8 @@
 #include "Worm.h"
 #include "Resources.h"
 #include "Physics.h"
+#include "Game.h"
+#include "Enemy.h"
 #include <iostream>
 
 constexpr float M_PI = 22.0f / 7.0f;
@@ -20,27 +22,21 @@ void Worm::Begin() {
 			AnimFrame(0.0, Resources::textures["EarthWorm.png"]),
 		});
 
+	fixtureData.listener = this;
+	fixtureData.worm = this;
+	fixtureData.type = FixtureDataType::Worm;
+
 	//create a dynamic body for player
 	b2BodyDef bodyDef{};
 	bodyDef.type = b2_dynamicBody;
 	bodyDef.position.Set(position.x, position.y);
 	bodyDef.fixedRotation = true;
-	body = Physics::world.CreateBody(&bodyDef);
+	body = Physics::world->CreateBody(&bodyDef);
 
 	b2FixtureDef fixtureDef{};
 	fixtureDef.density = 1;
 	fixtureDef.friction = 0.0f;
-
-	
-	//smoother shape so collisions are smoother
-	b2CircleShape circleShape{};
-	circleShape.m_radius = 0.26f;
-	circleShape.m_p.Set(0.0f, 0.0f);
-	fixtureDef.shape = &circleShape;
-	body->CreateFixture(&fixtureDef);
-
-	circleShape.m_p.Set(0.0f, 0.0f);
-	//body->CreateFixture(&fixtureDef);
+	fixtureDef.userData = &fixtureData;
 
 	b2PolygonShape polygonShape{};
 	polygonShape.SetAsBox(0.5f, 0.25f);
@@ -49,8 +45,7 @@ void Worm::Begin() {
 
 	polygonShape.SetAsBox(0.4f, 0.1f, b2Vec2(0.0f, 0.24f), 0.0f);
 	fixtureDef.isSensor = true;
-	fixtureDef.userData = this;
-	body->CreateFixture(&fixtureDef);
+	groundFixture = body->CreateFixture(&fixtureDef);
 }
 
 void Worm::Update(float deltaTime) 
@@ -118,15 +113,55 @@ void Worm::Draw(Renderer& renderer) {
 	renderer.Draw(textureToDraw, position, sf::Vector2f(facingLeft ? -1.0f : 1.0f, 0.5f));
 }
 
-void Worm::OnBeginContact() 
-{
-	//std::cout << "On Ground" << std::endl;
-	onGround++;
+int Worm::GetLeaves() {
+	return leaves;
 }
 
-void Worm::OnEndContact()
+void Worm::OnBeginContact(b2Fixture* self, b2Fixture* other)
 {
-	if (onGround > 0) {
+	FixtureData* data = (FixtureData*)other->GetUserData();
+
+	if (!data) {
+		return;
+	}
+
+	if (groundFixture == self && data->type == FixtureDataType::MapTile) {
+		onGround++;
+	}
+	else if (groundFixture == self && data->type == FixtureDataType::Spike) {
+		isDead = true;
+	}
+	else if (groundFixture == self && data->type == FixtureDataType::FinishLine) {
+		hasWon = true;
+	}
+	else if(groundFixture == self && data->type == FixtureDataType::Object && data->object && data->object->tag == "leaf"){
+		DeleteObject(data->object);
+		leaves++;
+	} 
+	else if  (data->type == FixtureDataType::Object && data->object->tag == "enemy") {
+		if (groundFixture == self) {
+			Enemy* enemy = dynamic_cast<Enemy*>(data->object);
+			if (enemy) {
+				enemy->Die();
+			}
+			
+		}
+		else {
+			isDead = true;
+		}
+		
+	}
+}
+
+void Worm::OnEndContact(b2Fixture* self, b2Fixture* other)
+{
+	FixtureData* data = (FixtureData*)other->GetUserData();
+
+	if (!data) {
+		return;
+	}
+
+	if (groundFixture == self && data->type == FixtureDataType::MapTile && onGround > 0) {
 		onGround--;
 	}
 }

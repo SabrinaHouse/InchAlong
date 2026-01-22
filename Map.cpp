@@ -3,6 +3,7 @@
 #include "Physics.h"
 #include "Object.h"
 #include "Leaf.h"
+#include "Enemy.h"
 #include <iostream>
 #include <Box2D.h>
 
@@ -49,6 +50,8 @@ sf::Vector2f Map::MapFromImage(const sf::Image& image, std::vector<Object*>& obj
 	Red = Worm
 	Magenta = Spikes
 	Green = Leaf
+	Cyan = Ant
+	Yellow = Win!
 	*/
 
 	//for every column in the array
@@ -58,6 +61,8 @@ sf::Vector2f Map::MapFromImage(const sf::Image& image, std::vector<Object*>& obj
 		for (size_t y = 0; y < grid[x].size(); y++)
 		{
 			sf::Color color = image.getPixel(x, y);
+			Object* object = nullptr;
+
 			if (color == sf::Color::Black)
 			{
 				grid[x][y] = 1;
@@ -65,10 +70,19 @@ sf::Vector2f Map::MapFromImage(const sf::Image& image, std::vector<Object*>& obj
 				//create a static body for map tiles
 				b2BodyDef bodyDef{};
 				bodyDef.position.Set(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize / 2.0f);
-				b2Body* body = Physics::world.CreateBody(&bodyDef);
+				b2Body* body = Physics::world->CreateBody(&bodyDef);
 				b2PolygonShape shape{};
 				shape.SetAsBox(cellSize / 2.0f, cellSize / 2.0f);
-				body->CreateFixture(&shape, 0);
+
+				FixtureData* fixtureData = new FixtureData();
+				fixtureData->type = FixtureDataType::MapTile;
+				fixtureData->mapX = x;
+				fixtureData->mapY = y;
+
+				b2FixtureDef fixtureDef{};
+				fixtureDef.shape = &shape;
+				fixtureDef.userData = fixtureData;
+				body->CreateFixture(&fixtureDef);
 			}
 			else if (color == sf::Color::Blue) {
 				grid[x][y] = 2;
@@ -76,10 +90,19 @@ sf::Vector2f Map::MapFromImage(const sf::Image& image, std::vector<Object*>& obj
 				//create a static body for map tiles
 				b2BodyDef bodyDef{};
 				bodyDef.position.Set(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize / 2.0f);
-				b2Body* body = Physics::world.CreateBody(&bodyDef);
+				b2Body* body = Physics::world->CreateBody(&bodyDef);
 				b2PolygonShape shape{};
 				shape.SetAsBox(cellSize / 2.0f, cellSize / 2.0f);
-				body->CreateFixture(&shape, 0);
+
+				FixtureData* fixtureData = new FixtureData();
+				fixtureData->type = FixtureDataType::MapTile;
+				fixtureData->mapX = x;
+				fixtureData->mapY = y;
+
+				b2FixtureDef fixtureDef{};
+				fixtureDef.shape = &shape;
+				fixtureDef.userData = fixtureData;
+				body->CreateFixture(&fixtureDef);
 			}
 			else if (color == sf::Color::Magenta) {
 				grid[x][y] = 3;
@@ -88,19 +111,57 @@ sf::Vector2f Map::MapFromImage(const sf::Image& image, std::vector<Object*>& obj
 				b2BodyDef bodyDef{};
 				//position is set slightly lower to account for the spikes being smaller than an actual tile
 				bodyDef.position.Set(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize/1.15f);
-				b2Body* body = Physics::world.CreateBody(&bodyDef);
+				b2Body* body = Physics::world->CreateBody(&bodyDef);
 				b2PolygonShape shape{};
 				shape.SetAsBox(cellSize / 2.0f, cellSize / 2.0f);
-				body->CreateFixture(&shape, 0);
+
+				FixtureData* fixtureData = new FixtureData();
+				fixtureData->type = FixtureDataType::Spike;
+				fixtureData->mapX = x;
+				fixtureData->mapY = y;
+
+				b2FixtureDef fixtureDef{};
+				fixtureDef.shape = &shape;
+				fixtureDef.userData = fixtureData;
+				body->CreateFixture(&fixtureDef);
+			}
+			else if(color == sf::Color::Yellow){
+				grid[x][y] = 4;
+
+				//create a static body for map tiles
+				b2BodyDef bodyDef{};
+				//position is set slightly lower to account for the spikes being smaller than an actual tile
+				bodyDef.position.Set(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize / 1.15f);
+				b2Body* body = Physics::world->CreateBody(&bodyDef);
+				b2PolygonShape shape{};
+				shape.SetAsBox(cellSize / 2.0f, cellSize / 2.0f);
+
+				FixtureData* fixtureData = new FixtureData();
+				fixtureData->type = FixtureDataType::FinishLine;
+				fixtureData->mapX = x;
+				fixtureData->mapY = y;
+
+				b2FixtureDef fixtureDef{};
+				fixtureDef.shape = &shape;
+				fixtureDef.userData = fixtureData;
+				fixtureDef.isSensor = true;
+				body->CreateFixture(&fixtureDef);
 			}
 			else if (color == sf::Color::Red) {
 				wormPosition = sf::Vector2f(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize / 2.0f);
 			}
 			else if (color == sf::Color::Green) {
-				Object* leaf = new Leaf();
-				leaf->position = sf::Vector2f(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize / 2.0f);
-				objects.push_back(leaf);
+				object = new Leaf();
 			} 
+			else if (color == sf::Color::Cyan) {
+				object = new Enemy();
+			}
+
+			if (object)
+			{
+				object->position = sf::Vector2f(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize / 2.0f);
+				objects.push_back(object);
+			}
 		}
 	}
 
@@ -127,6 +188,9 @@ void Map::Draw(Renderer& renderer)
 			else if (cell == 3)
 			{
 				renderer.Draw(Resources::textures["Spikes.png"], sf::Vector2f(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize / 2.0f), sf::Vector2f(cellSize, cellSize));
+			}
+			else if (cell == 4) {
+				renderer.Draw(Resources::textures["FinishLine.png"], sf::Vector2f(cellSize * x + cellSize / 2.0f, cellSize * y + cellSize / 2.0f), sf::Vector2f(cellSize, cellSize));
 			}
 			y++;
 		}

@@ -1,6 +1,11 @@
-
 #include "Leaf.h"
 #include "Resources.h"
+#include <iostream>
+
+
+Leaf::~Leaf() {
+	Physics::world->DestroyBody(body);
+}
 
 void Leaf::Begin() {
 	animation = Animation(.8f,
@@ -11,6 +16,24 @@ void Leaf::Begin() {
 			AnimFrame(0.0, Resources::textures["leaf4.png"])
 		}
 	);
+
+	tag = "leaf";
+
+	b2BodyDef bodyDef{};
+	bodyDef.position.Set(position.x , position.y);
+	b2Body* body = Physics::world->CreateBody(&bodyDef);
+	b2PolygonShape shape{};
+	shape.SetAsBox(0.4, 0.4);
+
+	FixtureData* fixtureData = new FixtureData();
+	fixtureData->type = FixtureDataType::Object;
+	fixtureData->object = this;
+
+	b2FixtureDef fixtureDef{};
+	fixtureDef.shape = &shape;
+	fixtureDef.isSensor = true;
+	fixtureDef.userData = fixtureData;
+	body->CreateFixture(&fixtureDef);
 }
 
 void Leaf::Update(float deltaTime) {

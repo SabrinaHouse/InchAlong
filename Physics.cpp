@@ -1,7 +1,47 @@
 #include "Physics.h"
 
-b2World Physics::world{b2Vec2(0.0f, 9.2f)};
+b2World* Physics::world{};
 MyDebugDraw* Physics::debugDraw{};
+
+class MyGlobalConstactListener :
+	public b2ContactListener
+{
+	virtual void BeginContact(b2Contact* contact) override
+	{
+		FixtureData* data = (FixtureData*)contact->GetFixtureA()->GetUserData();
+
+		if (data && data->listener)
+		{
+			data->listener->OnBeginContact(contact->GetFixtureA(), contact->GetFixtureB());
+		}
+
+		data = (FixtureData*)contact->GetFixtureB()->GetUserData();
+
+		if (data && data->listener)
+		{
+			data->listener->OnBeginContact(contact->GetFixtureB(), contact->GetFixtureA());
+		}
+	}
+
+	virtual void EndContact(b2Contact* contact) override
+	{
+		FixtureData* data = (FixtureData*)contact->GetFixtureA()->GetUserData();
+
+
+		if (data && data->listener)
+		{
+			data->listener->OnEndContact(contact->GetFixtureA(), contact->GetFixtureB());
+		}
+
+		data = (FixtureData*)contact->GetFixtureB()->GetUserData();
+
+		if (data && data->listener)
+		{
+			data->listener->OnEndContact(contact->GetFixtureB(), contact->GetFixtureA());
+		}
+	}
+};
+
 
 class MyDebugDraw
 	:public b2Draw
@@ -97,53 +137,21 @@ private:
 	sf::RenderTarget& target;
 };
 
-class MyGlobalConstactListener :
-	public b2ContactListener
+void Physics::Init()
 {
-	virtual void BeginContact(b2Contact* contact) override
-	{
-		ContactListener* listener = (ContactListener*) contact->GetFixtureA()->GetUserData();
-
-		if (listener)
-		{
-			listener->OnBeginContact();
-		}
-
-		listener = (ContactListener*)contact->GetFixtureB()->GetUserData();
-
-		if (listener)
-		{ 
-			listener->OnBeginContact();
-		}
+	if (world) {
+		delete world;
 	}
 
-	virtual void EndContact(b2Contact* contact) override
-	{
-		ContactListener* listener = (ContactListener*)contact->GetFixtureA()->GetUserData();
-
-		if (listener)
-		{
-			listener->OnEndContact();
-		}
-
-		listener = (ContactListener*)contact->GetFixtureB()->GetUserData();
-
-		if (listener)
-		{
-			listener->OnEndContact();
-		}
-	}
-};
-
-void Physics::Init() 
-{
+	world = new b2World(b2Vec2(0.0f, 9.2f));
+	world->SetDebugDraw(debugDraw);
 
 }
 
 void Physics::Update(float deltaTime) 
 {
-	world.Step(deltaTime, 8, 3);
-	world.SetContactListener(new MyGlobalConstactListener());
+	world->Step(deltaTime, 8, 3);
+	world->SetContactListener(new MyGlobalConstactListener());
 }
 
 void Physics::DebugDraw(Renderer& renderer)
@@ -151,9 +159,9 @@ void Physics::DebugDraw(Renderer& renderer)
 	if (!debugDraw)
 	{
 		debugDraw = new MyDebugDraw(renderer.target);
-		debugDraw->SetFlags(b2Draw::e_shapeBit);
-		world.SetDebugDraw(debugDraw);
+		debugDraw->SetFlags(0u);
+		world->SetDebugDraw(debugDraw);
 	}
 
-	//world.DrawDebugData();
+	world->DrawDebugData();
 }
