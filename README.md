@@ -1,6 +1,6 @@
 # Inch Along
 
-2D platformer made in Visual Studio 2019 using C++, Box2D, and SFML
+2D platformer made in Visual Studio 2019 using C++, Box2D, and SFML 2.6.1
 
 <img width="1292" height="576" alt="image" src="https://github.com/user-attachments/assets/6740fcca-d1dc-42d5-8b1f-0fcaafce20fe" />
 
@@ -22,7 +22,7 @@ Different levels can be easily imported by the player using the MapFromImage fea
 
 The player and ants will sometimes register a wall that isn't there and stop moving / turn around randomly. This is a bug within the Box2D collider. The player can correct this bug when it happens by backing up or jumping.
 
-## Credits 
+## Credits:
 
 Sky Background made can be found at https://free-game-assets.itch.io/free-pixel-art-cloud-and-sky-backgrounds. All other sprites are original.
 
