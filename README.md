@@ -26,4 +26,4 @@ The player and ants will sometimes register a wall that isn't there and stop mov
 
 Sky Background made can be found at https://free-game-assets.itch.io/free-pixel-art-cloud-and-sky-backgrounds. All other sprites are original.
 
-Made following The Hello World Guy’s tutorial (https://www.youtube.com/watch?v=aCq7P0e4cv0&list=PLlnvVTSJ0XwdnquTl8y5xvsY4aka_8h8H).
+Made following The Hello World Guy’s tutorial https://www.youtube.com/watch?v=aCq7P0e4cv0&list=PLlnvVTSJ0XwdnquTl8y5xvsY4aka_8h8H
