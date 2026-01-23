@@ -2,7 +2,7 @@
 
 2D platformer made in Visual Studio 2019 using C++, Box2D, and SFML
 
-<img width="646" height="288" alt="image" src="https://github.com/user-attachments/assets/6740fcca-d1dc-42d5-8b1f-0fcaafce20fe" />
+<img width="1292" height="576" alt="image" src="https://github.com/user-attachments/assets/6740fcca-d1dc-42d5-8b1f-0fcaafce20fe" />
 
 ## Game Play: 
 
@@ -10,7 +10,7 @@ Use WASD to move as well as Space to Jump. Use Space or Enter to select items in
 
 Avoid ants and spikes, collect leaves, and make it to the finish line flag to progress levels.
 
-<img width="411" height="284" alt="image" src="https://github.com/user-attachments/assets/8afd61d1-15ec-47ab-b987-9f4f9f0ef835" />
+<img width="1233" height="852" alt="image" src="https://github.com/user-attachments/assets/8afd61d1-15ec-47ab-b987-9f4f9f0ef835" />
 
 The game will keep track of the total amount of leaves you’ve collected throughout the 5 levels, this is your overall game score.
 
