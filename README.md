@@ -2,6 +2,8 @@
 
 2D platformer made in Visual Studio 2019 using C++, Box2D, and SFML 2.6.1
 
+**IMPORTANT NOTE: ** Run in x86!
+
 <img width="1292" height="576" alt="image" src="https://github.com/user-attachments/assets/6740fcca-d1dc-42d5-8b1f-0fcaafce20fe" />
 
 ## Game Play: 
